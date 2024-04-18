@@ -1,11 +1,11 @@
 <script>
+  import { tick, getContext } from 'svelte'
   import Icon from '@iconify/svelte'
   import { page } from '$app/stores'
-  import axios from 'axios'
   import DashboardToolbar from '$lib/components/DashboardToolbar.svelte'
   import SiteThumbnail from '$lib/components/SiteThumbnail.svelte'
   import { show, hide } from '$lib/components/Modal.svelte'
-  import * as actions from '../actions'
+  import * as actions from '$lib/actions'
   import { invalidate } from '$app/navigation'
 
   /** @type {{
@@ -44,42 +44,15 @@
       id: 'DELETE_SITE',
       props: {
         site,
-        onSuccess: async (files, repo) => {
-          if (repo) {
-            let github_token =
-              $page.data.config['github_token']['value'] || null
-            let github_account =
-              $page.data.config['github_token']['options'].user.login || null
-
-            if (github_token && github_account) {
-              const headers = { Authorization: `Bearer ${github_token}` }
-
-              await axios
-                .delete(
-                  `https://api.github.com/repos/${github_account}/${site.active_deployment.repo.name}`,
-                  {
-                    headers: {
-                      ...headers,
-                      Accept: 'application/vnd.github.v3+json',
-                    },
-                  }
-                )
-                .catch(function (error) {
-                  console.warn(`Github API error: ${error.message}`)
-                })
-            } else {
-              console.warn('Github account not configured properly')
-            }
-          }
-          await actions.sites.delete(site.id, files)
-          invalidate('app:data')
-          hide()
-        },
       },
     })
   }
 
-  let siteBeingEdited
+  async function rename_site(id, name) {
+    await actions.sites.update(id, { name })
+  }
+
+  let siteBeingEdited = { id: null, element: null }
 </script>
 
 <main class="primo-reset">
@@ -94,12 +67,13 @@
             </a>
             <div class="site-info">
               <div class="site-name">
-                {#if siteBeingEdited === site.id}
+                {#if siteBeingEdited.id === site.id}
                   <form
-                    on:submit|preventDefault={() => (siteBeingEdited = null)}
+                    on:submit|preventDefault={() => (siteBeingEdited = { id: null, element: null })}
                   >
                     <input
-                      on:blur={() => (siteBeingEdited = null)}
+                      bind:this={siteBeingEdited.element}
+                      on:blur={() => rename_site(site.id, site.name)}
                       class="reset-input"
                       type="text"
                       bind:value={site.name}
@@ -113,26 +87,35 @@
                 {/if}
               </div>
               <span class="site-url">{site.url}</span>
+              {#if getContext('DEBUGGING')}
+                <button
+                  style="font-size:0.75rem;cursor:pointer;text-align:left"
+                  on:click={(e) => {
+                    navigator.clipboard.writeText(e.target.innerText)
+                    e.target.style.opacity = '0.5'
+                  }}
+                >
+                  {site.id}
+                </button>
+              {/if}
               {#if $page.data.user.admin}
                 <div class="buttons">
-                  <button
-                    on:click={() => beginInvitation(site)}
-                    class="site-button"
-                  >
+                  <button on:click={() => beginInvitation(site)} class="site-button">
                     <Icon icon="clarity:users-solid" />
                     <span>Collaborators</span>
                   </button>
                   <button
                     class="site-button"
-                    on:click={() => (siteBeingEdited = site.id)}
+                    on:click={async () => {
+                      siteBeingEdited = { id: site.id, element: null }
+                      await tick()
+                      siteBeingEdited.element.focus()
+                    }}
                   >
                     <Icon icon="material-symbols:edit-square-outline-rounded" />
                     <span>Rename</span>
                   </button>
-                  <button
-                    class="site-button"
-                    on:click={() => delete_site(site)}
-                  >
+                  <button class="site-button" on:click={() => delete_site(site)}>
                     <Icon icon="pepicons-pop:trash" />
                     <span>Delete</span>
                   </button>
@@ -232,6 +215,9 @@
             padding: 1.5rem;
 
             .site-name {
+              form {
+                line-height: 0;
+              }
               a {
                 display: flex;
                 justify-content: space-between;
@@ -320,7 +306,9 @@
   }
 
   button {
-    transition: color 0.1s, background-color 0.1s;
+    transition:
+      color 0.1s,
+      background-color 0.1s;
     &:focus {
       outline: 2px solid var(--primo-color-brand);
     }

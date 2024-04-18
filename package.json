@@ -1,6 +1,6 @@
 {
   "name": "primo-server",
-  "version": "2.0.0--beta.1",
+  "version": "2.0.0--beta.48",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -15,19 +15,23 @@
   "dependencies": {
     "@fontsource/fira-code": "^5.0.5",
     "@iconify/svelte": "^2.2.1",
-    "@primocms/builder": "^0.0.30",
-    "@supabase/auth-helpers-sveltekit": "^0.8.7",
-    "@supabase/supabase-js": "^2.0.0-rc.3",
+    "@primocms/builder": "^0.1.66",
+    "@rollup/browser": "^3.28.0",
+    "@supabase/auth-helpers-sveltekit": "^0.10.2",
+    "@supabase/supabase-js": "^2.31.0",
     "axios": "^0.26.0",
+    "estree-walker": "^3.0.3",
     "lodash-es": "^4.17.21",
+    "memfs": "^4.7.7",
     "nanoid": "^3.1.23",
     "promise-worker": "^2.0.1",
+    "resolve.exports": "^2.0.2",
     "timeago.js": "^4.0.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.33.0",
-    "@sveltejs/adapter-auto": "next",
-    "@sveltejs/kit": "^1.22.3",
+    "@sveltejs/adapter-auto": "2.1.1",
+    "@sveltejs/kit": "^1.22.4",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "autoprefixer": "^10.3.6",
@@ -48,7 +52,7 @@
     "tailwindcss": "^2.2.16",
     "tslib": "^2.4.1",
     "typescript": "^4.9.3",
-    "vite": "^4.2.1",
+    "vite": "^4.4.8",
     "vitest": "^0.25.8"
   },
   "type": "module",
